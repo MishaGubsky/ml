@@ -177,7 +177,7 @@ print('theta', list(theta))
 print('success', success)
 print('iteration', iteration_count, '\n')
 
-10
+# 10
 
 plt.plot(norm_X, Y, 'b.', label='data')
 x = np.arange(np.min(norm_X), np.max(norm_X), 0.01)

@@ -58,7 +58,7 @@ def check_prediction_accuracy_with_fp(X, Thetas, Y):
     return check_prediction_accuracy(class_predictions, Y[:, 0])
 
 
-# print('prediction accuracy:', check_prediction_accuracy_with_fp(X, Thetas, Y))
+print('prediction accuracy:', check_prediction_accuracy_with_fp(X, Thetas, Y))
 
 # 5
 
@@ -128,7 +128,7 @@ def back_propagation(Thetas, X, Y):
     return np.array([delta.dot(A[i].T) for i, delta in enumerate(deltas)]) / M
 
 
-# grads = back_propagation(Thetas, X, one_hot_Y)
+grads = back_propagation(Thetas, X, one_hot_Y)
 
 # 11
 
@@ -177,11 +177,11 @@ def back_propagation_with_reg(Thetas, X, Y, reg_param):
     return D + np.array([theta[:, 1:] for theta in Thetas]) * reg_param / M
 
 
-# grads_with_reg = back_propagation_with_reg(Thetas, X, one_hot_Y, 1)
+grads_with_reg = back_propagation_with_reg(Thetas, X, one_hot_Y, 1)
 
 # 13
 
-# print('gradient with reg check:', check_gradient(X, one_hot_Y, Thetas, grads_with_reg))
+print('gradient with reg check:', check_gradient(X, one_hot_Y, Thetas, grads_with_reg))
 
 # 14
 

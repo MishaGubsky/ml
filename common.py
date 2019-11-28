@@ -5,8 +5,8 @@ from scipy.io import loadmat
 COLORS = ['r', 'g', 'b', 'gold', 'orange', 'black', 'brown', 'cyan', 'magenta']
 MARKERS = ['x', 'o', '.', '+']
 
-DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), f'../Data/')
-CUSTOM_DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), f'../CustomData/')
+DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), f'Data/')
+CUSTOM_DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), f'CustomData/')
 
 
 def load_data(filename, convert_type=float, separator=',', directory=DATA_DIRECTORY, encoding='utf-8',
@@ -39,7 +39,7 @@ def load_data(filename, convert_type=float, separator=',', directory=DATA_DIRECT
 
 
 def load_data_from_mat_file(filename):
-    filepath = os.path.join(os.path.dirname(__file__), f'../Data/{filename}.mat')
+    filepath = os.path.join(os.path.dirname(__file__), f'Data/{filename}.mat')
     return loadmat(filepath)
 
 

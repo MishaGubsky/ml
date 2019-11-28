@@ -1,13 +1,11 @@
-import math
 import random
 import numpy as np
 import pandas as pd
-from matplotlib import cm
-from decimal import Decimal
 import scipy.optimize as opt
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.optimize import fmin, fmin_bfgs
 
 from common import load_data, load_data_from_mat_file
 
@@ -15,24 +13,24 @@ DATA_FILE_NAME_1 = 'Lab 2/ex2data1'
 DATA_FILE_NAME_2 = 'Lab 2/ex2data2'
 DATA_FILE_NAME_3 = 'Lab 2/ex2data3'
 
-# # 1
-# data_array = load_data(DATA_FILE_NAME_1)
-# df_1 = pd.DataFrame({'ex1': data_array[:, 0], 'ex2': data_array[:, 1], 'passed': data_array[:, 2]})
-# sorted_df_1 = df_1.sort_values(by=['ex1', 'ex2'])
+# 1
+data_array = load_data(DATA_FILE_NAME_1)
+df_1 = pd.DataFrame({'ex1': data_array[:, 0], 'ex2': data_array[:, 1], 'passed': data_array[:, 2]})
+sorted_df_1 = df_1.sort_values(by=['ex1', 'ex2'])
 
-# # 2
+# 2
 
-# dataset = sorted_df_1.query('passed==1')
-# plt.plot(dataset.ex1, dataset.ex2, 'g+')
-# dataset = sorted_df_1.query('passed==0')
-# plt.plot(dataset.ex1, dataset.ex2, 'ro')
+dataset_passed = sorted_df_1.query('passed==1')
+plt.plot(dataset_passed.ex1, dataset_passed.ex2, 'g+')
+dataset_not_passed = sorted_df_1.query('passed==0')
+plt.plot(dataset_not_passed.ex1, dataset_not_passed.ex2, 'ro')
 
 
-# # 3
+# 3
 
-# X = sorted_df_1[['ex1', 'ex2']].values
-# X = np.concatenate((np.ones((len(X), 1)), X), axis=1)
-# Y = sorted_df_1['passed'].values
+X = sorted_df_1[['ex1', 'ex2']].values
+X = np.concatenate((np.ones((len(X), 1)), X), axis=1)
+Y = sorted_df_1['passed'].values
 
 
 def logistic_regration_hypotesis(T, X):
@@ -61,85 +59,98 @@ def get_gradient_function(X, Y):
     return func
 
 
-def gradient_descent_function(T, X, Y, learning_rate, eps, iteration_count):
+def gradient_descent_function(T, X, Y, learning_rate=0.1, eps=1e-3, iteration_count=1e5):
     iteration = 0
     theta_gradient = [eps + 1]
+    _gradient_function = get_gradient_function(X, Y)
 
-    while any([abs(t) > eps for t in theta_gradient]) and iteration < iteration_count:
-        H = np.array(logistic_regration_hypotesis(T, X))
-        # print(T, theta_gradient)
-        theta_gradient = gradient_function(X, Y, H)
+    while np.any(np.abs(theta_gradient) > eps) and iteration < iteration_count:
+        theta_gradient = _gradient_function(T)
         T -= learning_rate * theta_gradient
         iteration += 1
 
-    return T, not any([abs(t) > eps for t in theta_gradient]), iteration
-
-# # 4
-# ## Nedler-Mead
+    return T, not np.any(np.abs(theta_gradient) > eps), iteration
 
 
-# T0 = np.array([-2, 0.1, 0.1])
-# eps = 1.0e-6
+T0 = np.array([-2, 0.1, 0.1])
+eps = 1.0e-6
 
-# cost_func = get_cost_function(X, Y)
-# res = opt.minimize(cost_func, T0, method='Nelder-Mead', options={'xtol': eps, 'disp': True})
-# print(res)
-# print('\n\n')
+theta, success, iteration = gradient_descent_function(T0, X, Y, learning_rate=4*1e-3, eps=eps, iteration_count=1e6)
+print('Custom GD:')
+print('theta', theta)
+print('success', success)
+print('iteration', iteration, '\n')
 
-# ## BFGS
+# 4
+
+## Nedler-Mead
+
+print('Nedler-Mead with regularization:')
+T0 = np.array([-2, 0.1, 0.1])
+eps = 1.0e-6
+
+cost_func = get_cost_function(X, Y)
+res = opt.minimize(cost_func, T0, method='Nelder-Mead', options={'xtol': eps, 'disp': True})
+
+print('success:', res.success)
+print('x:', res.x)
+print('\n\n')
+
+## BFGS
+
+print('BFGS with regularization:')
+T0 = np.array([-2, 0.1, 0.1])
+
+cost_func = get_cost_function(X, Y)
+grad_func = get_gradient_function(X, Y)
+res = opt.minimize(cost_func, T0, method='bfgs', jac=grad_func, options={'disp': True})
+
+print('success:', res.success)
+print('x:', res.x)
+print('\n\n')
+
+# 5
 
 
-# T0 = np.array([-2, 0.1, 0.1])
-
-# cost_func = get_cost_function(X, Y)
-# grad_func = get_gradient_function(X, Y)
-# res = opt.minimize(cost_func, T0, method='bfgs', jac=grad_func, options={'disp': True})
-# print(res)
-
-# # 5
-
-# T = [-25.16134055,   0.20623176,   0.20147166]
+def predict(T, X, R=None):
+    prediction = logistic_regration_hypotesis(T, X)
+    return 1 if prediction >= 0.5 else 0
 
 
-def predict_prop(X):
-    if len(X) == 2:
-        X = np.concatenate((np.ones(1), X), axis=0)
+# 6
 
-    return round(logistic_regration_hypotesis(T, X), 3) * 100
-
-# # 6
+T_opt = res.x
 
 
-# T = [-25.16134055,   0.20623176,   0.20147166]
-
-
-def decision_boundary_function(x):
+def decision_boundary_function(T, x):
     return (-T[0] - T[1] * x) / T[2]
 
 
-# x = [*range(25, 100)]
-# H = [decision_boundary_function(xi) for xi in x]
+x = [*range(25, 100)]
+H = [decision_boundary_function(T_opt, xi) for xi in x]
 
-# plt.plot(x, H)
-# plt.show()
+plt.plot(dataset_passed.ex1, dataset_passed.ex2, 'g+')
+plt.plot(dataset_not_passed.ex1, dataset_not_passed.ex2, 'ro')
+plt.plot(x, H)
+plt.show()
 
-# # 7
+# 7
 
-# data_array = load_data(DATA_FILE_NAME_2)
-# df_2 = pd.DataFrame({'test1': data_array[:, 0], 'test2': data_array[:, 1], 'passed': data_array[:, 2]})
-# sorted_df_2 = df_2.sort_values(by=['test1', 'test2'])
-# X = sorted_df_2[['test1', 'test2']].values
-# Y = sorted_df_2['passed'].values
+data_array = load_data(DATA_FILE_NAME_2)
+df_2 = pd.DataFrame({'test1': data_array[:, 0], 'test2': data_array[:, 1], 'passed': data_array[:, 2]})
+sorted_df_2 = df_2.sort_values(by=['test1', 'test2'])
+X = sorted_df_2[['test1', 'test2']].values
+Y = sorted_df_2['passed'].values
 
-# # 8
+# 8
 
-# dataset = sorted_df_2.query('passed==1')
-# plt.plot(dataset.test1, dataset.test2, 'g+')
-# dataset = sorted_df_2.query('passed==0')
-# plt.plot(dataset.test1, dataset.test2, 'ro')
-# # plt.show()
+dataset_passed = sorted_df_2.query('passed==1')
+plt.plot(dataset_passed.test1, dataset_passed.test2, 'g+')
+dataset_not_passed = sorted_df_2.query('passed==0')
+plt.plot(dataset_not_passed.test1, dataset_not_passed.test2, 'ro')
+plt.show()
 
-# # 9
+# 9
 
 
 def get_extended_x(X):
@@ -155,14 +166,14 @@ def get_extended_x(X):
     return np.array(extended_X).T
 
 
-# E_X = get_extended_x(X)
-# # print(E_X)
+E_X = get_extended_x(X)
+print(E_X.shape)
 
-# # 10
+# 10
 
 
 def cost_function_with_reg(H, Y, R):
-    return -(Y.dot(np.log(H)) + (np.ones(Y.shape) - Y).dot(np.log(np.ones(H.shape) - H)) + R.sum()) / len(Y)
+    return cost_function(H, Y) + R.sum() / len(Y)
 
 
 def get_cost_function_with_reg(X, Y, reg_param):
@@ -174,7 +185,7 @@ def get_cost_function_with_reg(X, Y, reg_param):
 
 
 def gradient_function_with_reg(X, Y, H, R):
-    return ((H - Y).dot(X) + R) / len(Y)
+    return gradient_function(X, Y, H) + R / len(Y)
 
 
 def get_gradient_function_with_reg(X, Y, reg_param):
@@ -189,139 +200,110 @@ def get_gradient_function_with_reg(X, Y, reg_param):
 def gradient_descent_function_with_reg(T, X, Y, learning_rate, reg_param, eps, iteration_count):
     iteration = 0
     theta_gradient = [eps + 1]
+    _gradient_function = get_gradient_function_with_reg(X, Y, reg_param)
 
-    while any([abs(t) > eps for t in theta_gradient]) and iteration < iteration_count:
-        H = np.array(logistic_regration_hypotesis(T, X))
-        R = T * reg_param
-        R[0] = 0
-        theta_gradient = gradient_function_with_reg(X, Y, H, R)
-        # print(T, theta_gradient)
+    while np.any(np.abs(theta_gradient) > eps) and iteration < iteration_count:
+        theta_gradient = _gradient_function(T)
         T -= learning_rate * theta_gradient
         iteration += 1
 
-    return T, not any([abs(t) > eps for t in theta_gradient]), iteration
+    return T, not np.any(np.abs(theta_gradient) > eps), iteration
 
 
-# T0 = np.ones(28, dtype=float)
+T0 = np.zeros(28, dtype=float)
 
-# learning_rate = 1.0e-1
-# reg_param = 1e-2
-# eps = 1.0e-3
-# iteration_count = 1.0e6
-# theta, success, iteration = gradient_descent_function_with_reg(
-#     T0, E_X, Y, learning_rate, reg_param, eps, iteration_count)
+learning_rate = 1.0e-1
+reg_param = 1e-2
+eps = 1.0e-4
+iteration_count = 1.0e6
+l2_theta, success, iteration = gradient_descent_function_with_reg(
+    T0, E_X, Y, learning_rate, reg_param, eps, iteration_count)
 
-# print('L2 regularization:')
-# print('theta', list(theta))
-# print('success', success)
-# print('iteration', iteration, '\n')
+cost_func = get_cost_function_with_reg(E_X, Y, reg_param)
 
-# # 11
-# ##  Nedler-Mead
+print('L2 regularization:')
+print('Current function value:', cost_func(theta))
+print('iteration:', iteration)
+print('success:', success)
+print('x:', list(theta), '\n')
 
-# T0 = np.ones(28, dtype=float)
-# reg_param = 1e-1
-# eps = 1.0e-1
+# 11
+##  Nedler-Mead
 
-# cost_func = get_cost_function_with_reg(E_X, Y, reg_param)
-# res = opt.minimize(cost_func, T0, method='Nelder-Mead', options={'xtol': eps, 'disp': True})
-# success = res.success
+T0 = np.ones(28, dtype=float)
+reg_param = 1e-2
+eps = 1e-4
 
-# print(res)
-# print(res.success)
-# print('\n\n')
-# T = res.x
+nm_res = fmin(cost_func, T0, xtol=eps, maxfun=1e7)
+print('x:', res)
+print('\n\n')
 
-# ## BFGS
+## BFGS
 
-# T0 = np.ones(28, dtype=float)
-# reg_param = 1e-2
-# success = False
+T0 = np.ones(28, dtype=float)
+reg_param = 1e-2
+eps = 1e-4
 
-# cost_func = get_cost_function_with_reg(E_X, Y, reg_param)
-# grad_func = get_gradient_function_with_reg(E_X, Y, reg_param)
-# res = opt.minimize(cost_func, T0, method='bfgs', jac=grad_func, options={'disp': True})
+grad_func = get_gradient_function_with_reg(E_X, Y, reg_param)
+bfgs_res = fmin_bfgs(cost_func, T0, fprime=grad_func, gtol=eps, disp=True)
+print('x:', res)
+print('\n\n')
 
-# print(res)
+# 12
 
-# T = res.x
+predict(l2_theta, E_X[10])
+predict(nm_res, E_X[10])
+predict(bfgs_res, E_X[10])
 
-# # 12
+# 13
 
-# T = np.array([
-#     3.788222961806053, 4.64429107285844, -6.068099288695758, -2.5446834111645336, -6.271168370690532,
-#     2.8498431482312303, 0.30319248340021604, 2.0362498501728266, -6.696840463286545, 2.4684385851531783,
-#     -1.990087560557413, -4.316802919724697, -3.6315893960144052, -5.575263779981924, -0.10786011242570737,
-#     -3.6991611846659773, -3.6080049613616496, -4.468500605393321, 2.1161709668858255, 2.9874912859995164,
-#     5.021226982392175, 3.204473862829851, -3.7508783143023083, -0.8653574461540079, -0.845156509588659,
-#     -1.7174540165008965, 0.45113767052163006, -5.427897415287516
-# ])
+T = l2_theta
+ex_x = []
+X1 = np.arange(-1., 1.25, 0.01)
+X2 = np.arange(-1., 1.25, 0.01)
 
-
-def get_predict_func(T):
-    def func(X):
-        e_x = get_extended_x([X])
-        return round(logistic_regration_hypotesis(T, e_x)[0], 3) * 100
-
-    return func
+e_x = get_extended_x([[x1, x2] for x1 in X1 for x2 in X2])
+Z = np.array([logistic_regration_hypotesis(T, e_x)])
 
 
-# # predict_prop = get_predict_func(T)
+X1, X2 = np.meshgrid(X1, X2)
+Z = Z.reshape(X1.shape)
+plt.contour(X1, X2, Z, colors='black', levels=1)
+plt.plot(dataset_passed.test1, dataset_passed.test2, 'g+')
+plt.plot(dataset_not_passed.test1, dataset_not_passed.test2, 'ro')
 
-# # 13
+plt.show()
 
-# T = np.array([
-#     3.788222961806053, 4.64429107285844, -6.068099288695758, -2.5446834111645336, -6.271168370690532,
-#     2.8498431482312303, 0.30319248340021604, 2.0362498501728266, -6.696840463286545, 2.4684385851531783,
-#     -1.990087560557413, -4.316802919724697, -3.6315893960144052, -5.575263779981924, -0.10786011242570737,
-#     -3.6991611846659773, -3.6080049613616496, -4.468500605393321, 2.1161709668858255, 2.9874912859995164,
-#     5.021226982392175, 3.204473862829851, -3.7508783143023083, -0.8653574461540079, -0.845156509588659,
-#     -1.7174540165008965, 0.45113767052163006, -5.427897415287516
-# ])
-# ex_x = []
-# X1 = np.arange(-1., 1.25, 0.01)
-# X2 = np.arange(-1., 1.25, 0.01)
+# 14
 
-# e_x = get_extended_x([[x1, x2] for x1 in X1 for x2 in X2])
-# Z = np.array([logistic_regration_hypotesis(T, e_x)])
+T0 = np.ones(28, dtype=float)
+success = False
+reg_param0 = 1e-3
+Ts = []
 
+for i in range(7):
+    reg_param = reg_param0 * 10 ** i
+    cost_func = get_cost_function_with_reg(E_X, Y, reg_param)
+    grad_func = get_gradient_function_with_reg(E_X, Y, reg_param)
+    res = opt.minimize(cost_func, T0, method='bfgs', jac=grad_func, options={'disp': True})
+    Ts.append(res.x)
 
-# X1, X2 = np.meshgrid(X1, X2)
-# Z = Z.reshape(X1.shape)
-# plt.contour(X1, X2, Z, colors='black', levels=1)
+contours = []
+colors = ['blue', 'gold', 'orange', 'black', 'brown', 'cyan', 'magenta']
+X1 = np.arange(-1., 1.25, 0.01)
+X2 = np.arange(-1., 1.25, 0.01)
 
-# plt.show()
+e_x = get_extended_x([[x1, x2] for x1 in X1 for x2 in X2])
+for i, t in enumerate(Ts):
+    Z = np.array([logistic_regration_hypotesis(t, e_x)])
 
-# # 14
+    x1, x2 = np.meshgrid(X1, X2)
+    Z = Z.reshape(x1.shape)
+    contours.append(plt.contour(x1, x2, Z, levels=1, colors=colors[i]))
 
-# T0 = np.ones(28, dtype=float)
-# success = False
-# reg_param0 = 1e-3
-# Ts = []
+plt.legend([mpatches.Patch(color=colors[i]) for i in range(7)], [f'lambda=1e{i-3}' for i in range(7)])
 
-# for i in range(7):
-#     reg_param = reg_param0 * 10 ** i
-#     cost_func = get_cost_function_with_reg(E_X, Y, reg_param)
-#     grad_func = get_gradient_function_with_reg(E_X, Y, reg_param)
-#     res = opt.minimize(cost_func, T0, method='bfgs', jac=grad_func, options={'disp': True})
-#     Ts.append(res.x)
-
-# contours = []
-# colors = ['blue', 'gold', 'orange', 'black', 'brown', 'cyan', 'magenta']
-# X1 = np.arange(-1., 1.25, 0.01)
-# X2 = np.arange(-1., 1.25, 0.01)
-
-# e_x = get_extended_x([[x1, x2] for x1 in X1 for x2 in X2])
-# for i, t in enumerate(Ts):
-#     Z = np.array([logistic_regration_hypotesis(t, e_x)])
-
-#     x1, x2 = np.meshgrid(X1, X2)
-#     Z = Z.reshape(x1.shape)
-#     contours.append(plt.contour(x1, x2, Z, levels=1, colors=colors[i]))
-
-# plt.legend([mpatches.Patch(color=colors[i]) for i in range(7)], [f'lambda=1e{i-3}' for i in range(7)])
-
-# plt.show()
+plt.show()
 
 
 # 15
@@ -336,25 +318,25 @@ df_3 = pd.DataFrame(
 
 # 16
 
-# images_hash = {}
-# for i, v in enumerate(X):
-#     k = Y[i]
-#     if k not in images_hash:
-#         images_hash[k] = [v]
-#         continue
+images_hash = {}
+for i, v in enumerate(X):
+    k = Y[i]
+    if k not in images_hash:
+        images_hash[k] = [v]
+        continue
 
-#     images_hash[k].append(v)
+    images_hash[k].append(v)
 
-# shape = (20, 20)
-# fig, axs = plt.subplots(2, 5)
-# axs = axs.flatten()
-# for k, v in images_hash.items():
-#     ax = axs[k % 10]
-#     image = random.choice(v)
-#     data = image.reshape(shape)
-#     im = ax.imshow(data, cmap='gray', origin='lower')
+shape = (20, 20)
+fig, axs = plt.subplots(2, 5)
+axs = axs.flatten()
+for k, v in images_hash.items():
+    ax = axs[k % 10]
+    image = random.choice(v)
+    data = image.reshape(shape)
+    im = ax.imshow(data, cmap='gray', origin='lower')
 
-# plt.show()
+plt.show()
 
 # 17
 
@@ -375,8 +357,8 @@ def get_binary_classificator(y0, X, Y):
         print('success', success)
         print('iteration', iteration, '\n')
 
-    def func(X):
-        return round(logistic_regration_hypotesis(theta, X), 3) * 100
+    def func(x):
+        return predict(theta, x)
 
     return func
 
@@ -426,7 +408,14 @@ tranning = shuffled_df_3[:int(len(shuffled_df_3) * 0.8)]
 tranning_x = tranning[tranning.columns.difference(['y'])].values
 tranning_y = tranning['y'].values
 
-classificators = {v: get_binary_classificator(v, tranning_x, tranning_y) for v in unique_y}
+classificators = {v: get_binary_classificator_with_reg(v, tranning_x, tranning_y) for v in unique_y}
+
+
+def get_multiclass_classification(x, classificators=classificators):
+    predictions = [classificator(x) for c in classificators]
+    index = np.argmax(predictions)
+    return np.eye(len(classificator), k=index)
+
 
 # 20
 

@@ -6,21 +6,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
-
-from common import load_data
+from sklearn.datasets import load_boston
 
 np.seterr(divide='ignore', invalid='ignore', over='ignore')
 
-DATA_FILE_NAME_1 = 'Lab 10/housing.data'
-
 # 1
 
-
-def split_function(line):
-    return re.findall(r"[\d.]+", line)
-
-
-df_data = load_data(DATA_FILE_NAME_1, split_function=split_function, skip_extention=True)
+df_data = load_boston()
 X = df_data[:, :-1]
 Y = df_data[:, -1]
 
@@ -105,7 +97,7 @@ plt.ylabel('Error')
 plt.legend()
 plt.show()
 
-# error by trees_count
+# error by trees_depth
 
 trees_depth = np.arange(1, 20)
 y_train, y_test = [], []

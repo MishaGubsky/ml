@@ -88,14 +88,14 @@ def k_means(X, K, iteration_count=100):
 
 # 6
 
-# (best_clusters, best_centroids_history), best_cost = k_means(X.values, 3)
+(best_clusters, best_centroids_history), best_cost = k_means(X.values, 3)
 
-# plt.scatter(X.x1, X.x2, c=best_clusters)
+plt.scatter(X.x1, X.x2, c=best_clusters)
 
-# plt.plot(
-#   *[best_centroids_history[:, i, j] for i in range(len(best_centroids_history)) for j in range(2)], marker='x')
-# plt.title('Clustering and movement of centroids')
-# plt.show()
+plt.plot(
+  *[best_centroids_history[:, i, j] for i in range(len(best_centroids_history)) for j in range(2)], marker='x')
+plt.title('Clustering and movement of centroids')
+plt.show()
 
 # 7
 
@@ -121,11 +121,11 @@ compressed_A = compress(A)
 
 # 9
 
-# fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
-# fig.suptitle("Original and compressed image", fontsize=18)
-# axs[0].imshow(A)
-# axs[1].imshow(compressed_A)
-# plt.show()
+fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
+fig.suptitle("Original and compressed image", fontsize=18)
+axs[0].imshow(A)
+axs[1].imshow(compressed_A)
+plt.show()
 
 # 10
 
@@ -133,11 +133,11 @@ im = Image.open(CUSTOM_DATA_DIRECTORY + '6/imageExample.png')
 img = np.array(im.convert('RGB'))
 compressed_img = compress(img)
 
-# fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
-# fig.suptitle("Original and compressed image", fontsize=18)
-# axs[0].imshow(img)
-# axs[1].imshow(compressed_img)
-# plt.show()
+fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
+fig.suptitle("Original and compressed image", fontsize=18)
+axs[0].imshow(img)
+axs[1].imshow(compressed_img)
+plt.show()
 
 # 11
 
@@ -158,10 +158,10 @@ def compress_hierarchical_clusters(img, n_colors=16):
     return image.reshape(img.shape)
 
 
-# compressed_hierarchicaly_img = compress_hierarchical_clusters(img)
+compressed_hierarchicaly_img = compress_hierarchical_clusters(img)
 
-# fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
-# fig.suptitle("Compressed images with Hierarchical Clustering", fontsize=18)
-# axs[0].imshow(compressed_img)
-# axs[1].imshow(compressed_hierarchicaly_img)
-# plt.show()
+fig, axs = plt.subplots(ncols=2, figsize=[12, 5])
+fig.suptitle("Compressed images with Hierarchical Clustering", fontsize=18)
+axs[0].imshow(compressed_img)
+axs[1].imshow(compressed_hierarchicaly_img)
+plt.show()

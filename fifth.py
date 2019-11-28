@@ -36,13 +36,13 @@ def plot_data():
         plt.plot(group.x1, group.x2, COLORS[i] + MARKERS[i])
 
 
-# plot_data()
-# plt.show()
+plot_data()
+plt.show()
 
 # 3
 
-# classifier_c1 = SVC(kernel='linear', C=1.0)
-# classifier_c1.fit(X, Y)
+classifier_c1 = SVC(kernel='linear', C=1.0)
+classifier_c1.fit(X, Y)
 
 # 4
 
@@ -76,10 +76,10 @@ def plot_decision_boundary(classifiers_map, X, Y, **kwargs):
     plt.show()
 
 
-# classifiers_map = [(f'SVC with linear kernel C={c}', SVC(kernel='linear', C=c)) for c in [1., 100.]]
-# [c.fit(X, Y) for title, c in classifiers_map]
+classifiers_map = [(f'SVC with linear kernel C={c}', SVC(kernel='linear', C=c)) for c in [1., 100.]]
+[c.fit(X, Y) for title, c in classifiers_map]
 
-# plot_decision_boundary(classifiers_map, X, Y)
+plot_decision_boundary(classifiers_map, X, Y)
 
 # 5
 
@@ -92,8 +92,8 @@ def get_gaussian_kernel_function(sigma=1.):
     return func
 
 
-# gaussian_kernel_function = get_gaussian_kernel_function()
-# kernel = gaussian_kernel_function(X.values, X.values)
+gaussian_kernel_function = get_gaussian_kernel_function()
+kernel = gaussian_kernel_function(X.values, X.values)
 
 # 6
 
@@ -104,17 +104,18 @@ Y = df_2['y']
 
 # 7
 
-# gaussian_kernel_function = get_gaussian_kernel_function(0.1)
+gaussian_kernel_function = get_gaussian_kernel_function(0.1)
+kernel = gaussian_kernel_function(X.values, X.values)
 
 # 8
 
-# gaussian_classifier = SVC(kernel=gaussian_kernel_function, C=1., gamma='scale')
-# gaussian_classifier.fit(X.values, Y.values)
+gaussian_classifier = SVC(kernel=gaussian_kernel_function, C=1., gamma='scale')
+gaussian_classifier.fit(X.values, Y.values)
 
 # 9
 
-# gaussian_classifier_map = ('SVC with gaussian kernel C=1', gaussian_classifier)
-# plot_decision_boundary([gaussian_classifier_map], X, Y, bias=0.0)
+gaussian_classifier_map = ('SVC with gaussian kernel C=1', gaussian_classifier)
+plot_decision_boundary([gaussian_classifier_map], X, Y, bias=0.0)
 
 # 10
 
@@ -144,24 +145,24 @@ def search_optimal_params(X, y, Xval, Yval, C_list, gamma_list):
     return best_params
 
 
-# values_list = (0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30)
-# best_params = search_optimal_params(X, Y, Xval, Yval, C_list=values_list, gamma_list=values_list)
-# C_train, gamma_train = best_params
-# sigma_train = 1 / (2 * gamma_train)
+values_list = (0.01, 0.03, 0.1, 0.3, 1, 3, 10, 30)
+best_params = search_optimal_params(X, Y, Xval, Yval, C_list=values_list, gamma_list=values_list)
+C_train, gamma_train = best_params
+sigma_train = 1 / (2 * gamma_train)
 
-# print(f'Best params for validation set: C = {C_train}, sigma squared = {sigma_train}')
+print(f'Best params for validation set: C = {C_train}, sigma squared = {sigma_train}')
 
-# # 12
+# 12
 
 
-# gaussian_classifiers = [SVC(kernel='rbf', C=C_train, gamma=gamma_train)] * 2
-# [gaussian_classifiers[i].fit(x.values, y.values) for i, (x, y) in enumerate([(X, Y), (Xval, Yval)])]
+gaussian_classifiers = [SVC(kernel='rbf', C=C_train, gamma=gamma_train)] * 2
+[gaussian_classifiers[i].fit(x.values, y.values) for i, (x, y) in enumerate([(X, Y), (Xval, Yval)])]
 
-# gaussian_classifier_map = (f'SVC with gaussian C={C_train} Train set', gaussian_classifiers[0])
-# plot_decision_boundary([gaussian_classifier_map], X, Y, bias=0.1)
+gaussian_classifier_map = (f'SVC with gaussian C={C_train} Train set', gaussian_classifiers[0])
+plot_decision_boundary([gaussian_classifier_map], X, Y, bias=0.1)
 
-# gaussian_classifier_map = (f'SVC with gaussian C={C_train} Valid set', gaussian_classifiers[1])
-# plot_decision_boundary([gaussian_classifier_map], Xval, Yval, bias=0.1)
+gaussian_classifier_map = (f'SVC with gaussian C={C_train} Valid set', gaussian_classifiers[1])
+plot_decision_boundary([gaussian_classifier_map], Xval, Yval, bias=0.1)
 
 # 13
 
@@ -171,8 +172,8 @@ Y = np.array(df_data['y'])[:, 0]
 
 # 14
 
-# gaussian_classifier = SVC(kernel='rbf', C=1., gamma='scale')
-# gaussian_classifier.fit(X, Y)
+gaussian_classifier = SVC(kernel='rbf', C=1., gamma='scale')
+gaussian_classifier.fit(X, Y)
 
 # 15
 
@@ -182,12 +183,12 @@ Ytest = np.array(df_data['ytest'])[:, 0]
 
 # 16
 
-# best_params = search_optimal_params(X, Y, Xtest, Ytest,
-#                                     C_list=np.arange(2, 4, 10), gamma_list=np.linspace(0.0005, 0.005, 10))
-# C_train, gamma_train = best_params
-# sigma_train = 1 / (2 * gamma_train)
+best_params = search_optimal_params(X, Y, Xtest, Ytest,
+                                    C_list=np.arange(2, 4, 10), gamma_list=np.linspace(0.0005, 0.005, 10))
+C_train, gamma_train = best_params
+sigma_train = 1 / (2 * gamma_train)
 
-# print(f'Best params for validation set: C = {C_train}, sigma squared = {sigma_train}', '\n')
+print(f'Best params for validation set: C = {C_train}, sigma squared = {sigma_train}', '\n')
 C_train, gamma_train = 2, 0.005
 
 # 17
@@ -236,8 +237,8 @@ def prepare_body(body):
 
 # 18
 
-# vocab_data = load_data(DATA_FILE_NAME_6, str, '\t')
-# vocab = dict(zip(vocab_data[:, 1].tolist(), vocab_data[:, 0].tolist()))
+vocab_data = load_data(DATA_FILE_NAME_6, str, '\t')
+vocab = dict(zip(vocab_data[:, 1].tolist(), vocab_data[:, 0].tolist()))
 
 # 19
 
@@ -275,29 +276,29 @@ spam_classificator = SVC(kernel='rbf', C=C_train, gamma=gamma_train)
 spam_classificator.fit(X, Y)
 
 
-# nltk.download("stopwords")
-# print('\n')
+nltk.download("stopwords")
+print('\n')
 
-# filenames = ['emailSample1', 'emailSample2', 'spamSample1', 'spamSample2']
-# emails = [open(DATA_DIRECTORY + f'Lab 5/{filename}.txt').read() for filename in filenames]
-# test_set = build_test_set(emails, vocab)
+filenames = ['emailSample1', 'emailSample2', 'spamSample1', 'spamSample2']
+emails = [open(DATA_DIRECTORY + f'Lab 5/{filename}.txt').read() for filename in filenames]
+test_set = build_test_set(emails, vocab)
 
-# result = spam_classificator.predict(test_set)
+result = spam_classificator.predict(test_set)
 
-# print('Spam classifier prediction:', result)
-# print('Excpected result:', [0, 0, 1, 1], '\n')
+print('Spam classifier prediction:', result)
+print('Excpected result:', [0, 0, 1, 1], '\n')
 
 
 # 22
 
-# filenames = ['emailExample', 'emailSpam', 'emailExample1', 'emailSpam1']
-# custom_emails = [open(CUSTOM_DATA_DIRECTORY + f'5/{filename}.txt').read() for filename in filenames]
-# test_set = build_test_set(custom_emails, vocab)
+filenames = ['emailExample', 'emailSpam', 'emailExample1', 'emailSpam1']
+custom_emails = [open(CUSTOM_DATA_DIRECTORY + f'5/{filename}.txt').read() for filename in filenames]
+test_set = build_test_set(custom_emails, vocab)
 
-# result = spam_classificator.predict(test_set)
+result = spam_classificator.predict(test_set)
 
-# print('Spam classifier prediction:', result)
-# print('Excpected result:', [0, 1, 0, 1], '\n')
+print('Spam classifier prediction:', result)
+print('Excpected result:', [0, 1, 0, 1], '\n')
 
 # 23
 
